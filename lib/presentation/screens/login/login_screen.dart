@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voz_popular/data/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,11 +9,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  //controller de texto
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  
+  bool _isLoading = false;
 
-  //liberar memória
   @override
   void dispose() {
     _emailController.dispose();
@@ -20,18 +21,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
-    //funcao login
-    final email = _emailController.text;
-    final senha = _senhaController.text;
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    //imprimir
-    print('Botão Entrar clicado!');
-    print('E-mail digitado: $email');
-    print('Senha digitada: $senha');
+    try {
+      final authService = AuthService();
+      final user = await authService.login(
+        _emailController.text,
+        _senhaController.text,
+      );
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
 
-    // navegação
-    Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -47,38 +67,30 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextFormField(
-              controller: _emailController, //associação
-              decoration: const InputDecoration(
-                labelText: 'E-mail',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
-              ),
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'E-mail', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email)),
               keyboardType: TextInputType.emailAddress,
+              enabled: !_isLoading,
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _senhaController, //associação
-              decoration: const InputDecoration(
-                labelText: 'Senha',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
+              controller: _senhaController,
+              decoration: const InputDecoration(labelText: 'Senha', border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock)),
               obscureText: true,
+              enabled: !_isLoading,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8))),
-              onPressed: _login, // login()
-              child: const Text(
-                'Entrar',
-                style: TextStyle(fontSize: 16),
-              ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: _isLoading ? null : _login,
+              child: _isLoading 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white,))
+                  : const Text('Entrar', style: TextStyle(fontSize: 16)),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: _isLoading ? null : () {
                 Navigator.pushNamed(context, '/register');
               },
               child: const Text('Não tem uma conta? Cadastre-se'),
