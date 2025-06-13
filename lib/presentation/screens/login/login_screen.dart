@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/data/services/auth_service.dart';
+import 'package:voz_popular/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _senhaController.text,
       );
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
       }
 
     } catch (e) {
@@ -91,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
               onPressed: _isLoading ? null : () {
-                Navigator.pushNamed(context, '/register');
+                Navigator.pushNamed(context, AppRoutes.register);
               },
               child: const Text('Não tem uma conta? Cadastre-se'),
             )

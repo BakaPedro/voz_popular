@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:voz_popular/presentation/screens/login/login_screen.dart';
-import 'package:voz_popular/presentation/screens/register/register_screen.dart';
-import 'package:voz_popular/presentation/screens/home/home_screen.dart';
-import 'package:voz_popular/presentation/screens/profile/profile_screen.dart';
-
+import 'package:voz_popular/routes/app_routes.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -23,13 +19,8 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/profile': (context) => const ProfileScreen(),
-      },
+      initialRoute: AppRoutes.login,
+      routes: AppRoutes.getRoutes(),
     );
   }
 }

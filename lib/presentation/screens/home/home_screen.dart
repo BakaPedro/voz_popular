@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/data/models/occurrence_model.dart';
 import 'package:voz_popular/data/services/occurrence_service.dart';
+import 'package:voz_popular/routes/app_routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -135,6 +136,13 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+        floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.pushNamed(context, AppRoutes.newOccurrence);
+      },
+      child: const Icon(Icons.add),
+      tooltip: 'Nova Ocorrência',
+    ),
     );
   }
 
