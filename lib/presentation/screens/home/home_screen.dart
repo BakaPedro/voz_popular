@@ -21,7 +21,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bem vindo!')),
+      appBar: AppBar(
+        title: const Text('Bem vindo!'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            tooltip: 'Meu Perfil',
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.profile);
+            },
+          ),
+        ],
+      ),
       //FutureBuilder para dados que demoram a chegar
       body: FutureBuilder<List<Occurrence>>(
         future: _occurrencesFuture,
@@ -50,8 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
                 elevation: 3,
-                clipBehavior:
-                    Clip.antiAlias, //corta bordas
+                clipBehavior: Clip.antiAlias, //corta bordas
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -136,13 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-        floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        Navigator.pushNamed(context, AppRoutes.newOccurrence);
-      },
-      child: const Icon(Icons.add),
-      tooltip: 'Nova Ocorrência',
-    ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, AppRoutes.newOccurrence);
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Nova Ocorrência',
+      ),
     );
   }
 

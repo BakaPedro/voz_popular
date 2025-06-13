@@ -28,4 +28,10 @@ class AuthService {
     print('Usuário cadastrado com sucesso: $name');
     return User(id: '2', name: name, email: email);
   }
+  
+  Future<void> logout() async {
+  //simula invalidação
+  await Future.delayed(const Duration(milliseconds: 500));
+  print('Usuário deslogado com sucesso!');
+}
 }
