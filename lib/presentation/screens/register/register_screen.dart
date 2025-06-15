@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:voz_popular/data/services/auth_service.dart';
+import 'package:voz_popular/data/repositories/auth_repository.dart';
+import 'package:voz_popular/locator.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -28,8 +29,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final authService = AuthService();
-      await authService.register(
+      //final authService = AuthService();
+      final authRepository = locator<AuthRepository>();
+      await authRepository.register(
         name: _nameController.text,
         email: _emailController.text,
         password: _passwordController.text,

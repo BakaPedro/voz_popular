@@ -74,8 +74,7 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
         _currentPosition = position;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
+      ScaffoldMessenger.of(context,
       ).showSnackBar(SnackBar(content: Text('Erro ao buscar localização: $e')));
     } finally {
       setState(() {

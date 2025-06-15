@@ -150,8 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.pushNamed(context, AppRoutes.newOccurrence);
         },
-        child: const Icon(Icons.add),
         tooltip: 'Nova Ocorrência',
+        child: const Icon(Icons.add),
       ),
     );
   }
