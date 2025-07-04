@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/data/repositories/auth_repository.dart';
-import 'package:voz_popular/routes/app_routes.dart';
 import 'package:voz_popular/locator.dart';
+import 'package:voz_popular/presentation/widgets/wave_background.dart'; // Importe o novo widget
+//import 'package:voz_popular/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,7 +14,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-
   bool _isLoading = false;
 
   @override
@@ -28,15 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
     try {
-      //final authService = AuthService();
       final authRepository = locator<AuthRepository>();
-      //final user = await authService.login(
-      //final user = 
       await authRepository.login(
         email: _emailController.text,
         password: _senhaController.text,
       );
-
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,63 +54,103 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login - Voz Popular')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'E-mail',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              enabled: !_isLoading,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _senhaController,
-              decoration: const InputDecoration(
-                labelText: 'Senha',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
-              obscureText: true,
-              enabled: !_isLoading,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Login'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.grey[800]),
+        titleTextStyle: TextStyle(
+          fontFamily: 'SpoofTrial',
+          color: const Color.fromARGB(255, 0, 0, 0),
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          //fundo
+          const Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: WaveBackground(),
+          ),
+
+          //form centralizado
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Card(
+                elevation: 8,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'BEM VINDO',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'SpoofTrial',
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: const Color.fromARGB(255, 39, 38, 38),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'E-mail',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        enabled: !_isLoading,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _senhaController,
+                        decoration: const InputDecoration(
+                          labelText: 'Senha',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.lock_outline),
+                        ),
+                        obscureText: true,
+                        enabled: !_isLoading,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 96, 91, 141),
+                          foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _isLoading ? null : _login,
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(color: Colors.white),
+                              )
+                            : const Text('Entrar', style: TextStyle(fontFamily: 'SpoofTrial', fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              onPressed: _isLoading ? null : _login,
-              child:
-                  _isLoading
-                      ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                      : const Text('Entrar', style: TextStyle(fontSize: 16)),
             ),
-            TextButton(
-              onPressed:
-                  _isLoading
-                      ? null
-                      : () {
-                        Navigator.pushNamed(context, AppRoutes.register);
-                      },
-              child: const Text('Não tem uma conta? Cadastre-se'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

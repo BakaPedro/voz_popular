@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/data/repositories/auth_repository.dart';
 import 'package:voz_popular/locator.dart';
-//import 'package:voz_popular/routes/app_routes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

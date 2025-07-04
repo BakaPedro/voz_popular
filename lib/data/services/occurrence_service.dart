@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 
 
 class OccurrenceService {
+  final String baseUrl = 'http://127.0.0.1:8000/';
   //retorna lista ocorrencia
   Future<List<Occurrence>> getOccurrences() async {
     await Future.delayed(const Duration(seconds: 2));

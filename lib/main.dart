@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/locator.dart';
 import 'package:voz_popular/presentation/screens/home/home_screen.dart';
-import 'package:voz_popular/presentation/screens/login/login_screen.dart';
+//import 'package:voz_popular/presentation/screens/login/login_screen.dart';
 import 'package:voz_popular/routes/app_routes.dart';
 import 'package:voz_popular/data/services/auth_manager.dart';
+import 'package:voz_popular/presentation/screens/welcome/welcome_screen.dart';
 
 void main() async {
   //garante que esteja pronto
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
           
-          home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
+          home: isLoggedIn ? const HomeScreen() : const WelcomeScreen(),
           
           onGenerateRoute: AppRoutes.onGenerateRoute,
         );
