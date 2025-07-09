@@ -6,7 +6,6 @@ class WaveBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    // Define a altura total da área onde as ondas vão aparecer
     final waveAreaHeight = size.height * 0.55;
 
     return SizedBox(
@@ -14,7 +13,6 @@ class WaveBackground extends StatelessWidget {
       width: size.width,
       child: Stack(
         children: [
-          // Cada onda é um Positioned para controlar sua altura a partir do fundo.
           Positioned(
             bottom: 0,
             left: 0,

@@ -25,10 +25,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Obtém o utilizador logado diretamente do AuthManager
     final user = AuthManager.instance.currentUser;
-
-    // Usa os dados do utilizador real, com um valor de fallback caso seja nulo
     final userName = user?.name ?? 'xxxxx';
     final userEmail = user?.email ?? 'xxxxx';
 
@@ -72,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    userName, // Exibe o nome real
+                    userName,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           fontFamily: 'SpoofTrial',
@@ -81,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    userEmail, // Exibe o e-mail real
+                    userEmail,
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: const Color.fromARGB(255, 255, 255, 255)),
