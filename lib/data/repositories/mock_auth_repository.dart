@@ -1,4 +1,4 @@
-import 'package:voz_popular/data/models/user_model.dart';
+/*import 'package:voz_popular/data/models/user_model.dart';
 import 'package:voz_popular/data/repositories/auth_repository.dart';
 import 'package:voz_popular/data/services/auth_manager.dart';
 
@@ -31,4 +31,4 @@ class MockAuthRepository implements AuthRepository {
     }
     return User(id: '2', name: name, email: email);
   }
-}
+}*/

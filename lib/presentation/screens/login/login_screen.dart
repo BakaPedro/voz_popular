@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voz_popular/data/repositories/auth_repository.dart';
 import 'package:voz_popular/locator.dart';
-import 'package:voz_popular/presentation/widgets/wave_background.dart'; // Importe o novo widget
-//import 'package:voz_popular/routes/app_routes.dart';
+import 'package:voz_popular/presentation/widgets/wave_background.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

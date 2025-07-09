@@ -5,10 +5,15 @@ import 'package:voz_popular/presentation/screens/home/home_screen.dart';
 import 'package:voz_popular/routes/app_routes.dart';
 import 'package:voz_popular/data/services/auth_manager.dart';
 import 'package:voz_popular/presentation/screens/welcome/welcome_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   //garante que esteja pronto
   WidgetsFlutterBinding.ensureInitialized();
+
+  //inicializar dados
+  await initializeDateFormatting('pt_BR', null);
+
   //inicializa o authmanager afim de carregar estado salvo
   await AuthManager.instance.init();
   setupLocator();

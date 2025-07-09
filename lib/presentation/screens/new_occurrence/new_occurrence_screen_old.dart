@@ -4,7 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:voz_popular/data/services/occurrence_service.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:voz_popular/data/repositories/auth_repository.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:voz_popular/data/models/category_model.dart';
+import 'package:voz_popular/data/models/theme_model.dart';
+import 'package:voz_popular/data/repositories/data_repository.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:voz_popular/locator.dart';
 
 class NewOccurrenceScreen extends StatefulWidget {
   const NewOccurrenceScreen({super.key});
@@ -14,21 +21,58 @@ class NewOccurrenceScreen extends StatefulWidget {
 }
 
 class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
-  final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
-  String? _selectedCategory;
+  final _streetController = TextEditingController();
+  final _numberController = TextEditingController();
+  final _neighborhoodController = TextEditingController();
+  final _referenceController = TextEditingController();
+  String? _selectedCategoryId;
+  String? _selectedThemeId;
 
-  //var imagem localização
-  //File? _imageFile;
+  List<Category> _categories = [];
+  List<ThemeModel> _themes = [];
 
   File? _mobileImageFile;
   Uint8List? _webImageBytes;
-
-  Position? _currentPosition;
-  bool _isLocating = false;
+  LatLng? _selectedLocation;
+  bool _isLoadingLocation = true;
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
+  bool _isLoadingInitialData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    setState(() => _isLoadingInitialData = true);
+    try {
+      await Future.wait([
+        _fetchInitialLocationAndAddress(),
+        _fetchDropdownData(),
+      ]);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingInitialData = false);
+      }
+    }
+  }
+
+  Future<void> _fetchDropdownData() async {
+    final dataRepository = locator<DataRepository>();
+    final categories = await dataRepository.getCategories();
+    final themes = await dataRepository.getThemes();
+    setState(() {
+      _categories = categories;
+      _themes = themes;
+    });
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -49,67 +93,67 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    setState(() {
-      _isLocating = true;
-    });
-
+  Future<void> _fetchInitialLocationAndAddress() async {
+    setState(() => _isLoadingLocation = true);
     try {
-      //verifica permissão
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Permissão de localização negada.')),
-          );
-          return;
+          throw Exception('Permissão de localização negada.');
         }
       }
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      setState(() {
-        _currentPosition = position;
-      });
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final initialLatLng = LatLng(position.latitude, position.longitude);
+      setState(() => _selectedLocation = initialLatLng);
+      await _getAddressFromCoordinates(initialLatLng);
     } catch (e) {
-      ScaffoldMessenger.of(context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao buscar localização: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao buscar localização: ${e.toString()}')));
+      }
+      final fallbackLatLng = LatLng(-19.0094, -57.6533);
+      setState(() => _selectedLocation = fallbackLatLng);
+      await _getAddressFromCoordinates(fallbackLatLng);
     } finally {
-      setState(() {
-        _isLocating = false;
-      });
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _getAddressFromCoordinates(LatLng point) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(point.latitude, point.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _streetController.text = place.street ?? '';
+          _neighborhoodController.text = place.subLocality ?? '';
+        });
+      }
+    } catch (e) {
+      print("Erro na geocodificação reversa: $e");
     }
   }
 
   Future<void> _submitOccurrence() async {
     final bool isImageSelected =
         kIsWeb ? _webImageBytes != null : _mobileImageFile != null;
-
-    //validação
-    /*if (_titleController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _selectedCategory == null ||
-        _imageFile == null ||
-        _currentPosition == null) {
+    if (_descriptionController.text.isEmpty ||
+        _streetController.text.isEmpty ||
+        _numberController.text.isEmpty ||
+        _neighborhoodController.text.isEmpty ||
+        _referenceController.text.isEmpty ||
+        _selectedCategoryId == null ||
+        _selectedThemeId == null ||
+        !isImageSelected ||
+        _selectedLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Por favor, preencha todos os campos, adicione uma imagem e a localização.',
+            'Por favor, preencha todos os campos e anexe imagem e localização.',
           ),
           backgroundColor: Colors.orange,
         ),
       );
-      return;
-    }*/
-     if (_titleController.text.isEmpty || 
-     _descriptionController.text.isEmpty || 
-     _addressController.text.isEmpty || _selectedCategory == null ||
-      !isImageSelected || _currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha todos os campos e anexe imagem e localização.'), 
-        backgroundColor: Colors.orange));
       return;
     }
 
@@ -118,16 +162,17 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
     });
 
     try {
-      final occurrenceService = OccurrenceService();
-      await occurrenceService.submitOccurrence(
-        title: _titleController.text,
+      await locator<OccurrenceRepository>().submitOccurrence(
         description: _descriptionController.text,
-        address: _addressController.text,
-        category: _selectedCategory!,
+        street: _streetController.text,
+        number: _numberController.text,
+        neighborhood: _neighborhoodController.text,
+        reference: _referenceController.text,
+        categoryId: _selectedCategoryId!,
+        themeId: _selectedThemeId!,
         mobileImageFile: _mobileImageFile,
         webImageBytes: _webImageBytes,
-        //imageFile: _imageFile!,
-        position: _currentPosition!,
+        position: _selectedLocation!,
       );
 
       if (mounted) {
@@ -159,12 +204,13 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
 
   @override
   void dispose() {
-    _titleController.dispose();
     _descriptionController.dispose();
-    _addressController.dispose();
+    _streetController.dispose();
+    _numberController.dispose();
+    _neighborhoodController.dispose();
+    _referenceController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     Widget imagePreview;
@@ -182,83 +228,90 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // titulo desc
-            TextFormField(
-              controller: _titleController,
-              enabled: !_isSubmitting,
-              decoration: const InputDecoration(
-                labelText: 'Título da Ocorrência',
-                hintText: 'Ex: Poste de luz queimado',
-                border: OutlineInputBorder(),
-              ),
+            //desc
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategoryId,
+                    hint: const Text('Categoria'),
+                    isExpanded: true,
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category.id.toString(),
+                        child: Text(category.name, overflow: TextOverflow.ellipsis),);}).toList(),
+                    onChanged: (value) => setState(() => _selectedCategoryId = value),
+                    validator: (value) => value == null ? 'Obrigatório' : null,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedThemeId,
+                    hint: const Text('Tema'),
+                    isExpanded: true,
+                    items: _themes.map((theme) {
+                      return DropdownMenuItem(
+                        value: theme.id.toString(),
+                        child: Text(theme.name, overflow: TextOverflow.ellipsis),);}).toList(),
+                    onChanged: (value) => setState(() => _selectedThemeId = value),
+                    validator: (value) => value == null ? 'Obrigatório' : null,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              enabled: !_isSubmitting,
-              decoration: const InputDecoration(
-                labelText: 'Descrição Detalhada',
-                hintText:
-                    'Descreva o problema com o máximo de detalhes possível...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 5, //linhas multiplas
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _addressController,
-              enabled: !_isSubmitting,
-              decoration: const InputDecoration(
-                labelText: 'Endereço da Ocorrência',
-                hintText: 'Ex: Rua Principal, em frente ao nº 123',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'Categoria',
-                border: OutlineInputBorder(),
-              ),
-              hint: const Text('Selecione uma categoria'),
-              items:
-                  [
-                        'Iluminação Pública',
-                        'Buracos na Rua',
-                        'Lixo Acumulado',
-                        'Sinalização',
-                        'Outros',
-                      ]
-                      .map(
-                        (category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
+            TextFormField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Descrição'), maxLines: 4),
+            const SizedBox(height: 24),
+            
+            //mapa
+            Text('Ajuste a Localização no Mapa', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 200,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _isLoadingLocation
+                    ? const Center(child: CircularProgressIndicator())
+                    : FlutterMap(
+                        options: MapOptions(
+                          initialCenter: _selectedLocation!,
+                          initialZoom: 17.0,
+                          onTap: (tapPosition, point) async {
+                            setState(() => _selectedLocation = point);
+                            await _getAddressFromCoordinates(point);
+                          },
                         ),
-                      )
-                      .toList(),
-              //atualiza a categoria
-              onChanged:
-                  _isSubmitting
-                      ? null
-                      : (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedCategory = value;
-                          });
-                        }
-                      },
-              //validação
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, selecione uma categoria.';
-                }
-                return null;
-              },
+                        children: [
+                          TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+                          MarkerLayer(markers: [
+                            Marker(
+                              point: _selectedLocation!,
+                              child: Icon(Icons.location_pin, color: Colors.red.shade700, size: 50.0),
+                            ),
+                          ]),
+                        ],
+                      ),
+              ),
             ),
+            const SizedBox(height: 16),
+            
+            //endereço
+            TextFormField(controller: _streetController, decoration: const InputDecoration(labelText: 'Rua')),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: TextFormField(controller: _numberController, decoration: const InputDecoration(labelText: 'Número'))),
+                const SizedBox(width: 16),
+                Expanded(child: TextFormField(controller: _neighborhoodController, decoration: const InputDecoration(labelText: 'Bairro'))),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(controller: _referenceController, decoration: const InputDecoration(labelText: 'Ponto de Referência (Opcional)')),
+           
             const SizedBox(height: 24),
 
-            // imagem
+            //imagem
             Container(
               height: 200,
               width: double.infinity,
@@ -289,32 +342,8 @@ class _NewOccurrenceScreenState extends State<NewOccurrenceScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16), 
             const SizedBox(height: 24),
-
-            //localização
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.my_location),
-                  onPressed: _getCurrentLocation,
-                ),
-                Expanded(
-                  child: Text(
-                    _currentPosition == null
-                        ? 'Clique para obter a localização'
-                        : 'Lat: ${_currentPosition!.latitude.toStringAsFixed(5)}, Lon: ${_currentPosition!.longitude.toStringAsFixed(5)}',
-                  ),
-                ),
-                if (_isLocating)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),

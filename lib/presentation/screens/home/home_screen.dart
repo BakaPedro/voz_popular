@@ -1,174 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:voz_popular/data/models/occurrence_model.dart';
-//import 'package:voz_popular/data/services/occurrence_service.dart';
-import 'package:voz_popular/locator.dart';
+import 'package:voz_popular/presentation/screens/my_occurrences/my_occurrences_screen.dart';
+import 'package:voz_popular/presentation/screens/profile/profile_screen.dart';
+import 'package:voz_popular/presentation/screens/updates/updates_screen.dart';
+import 'package:voz_popular/presentation/widgets/occurrence_list_view.dart';
 import 'package:voz_popular/routes/app_routes.dart';
-import 'package:voz_popular/data/repositories/auth_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<Occurrence>> _occurrencesFuture;
-  @override
-  void initState() {
-    super.initState();
-    //busca de ocorrencias
-    //_occurrencesFuture = OccurrenceService().getOccurrences();
-    _occurrencesFuture = locator<OccurrenceRepository>().getOccurrences();
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    OccurrenceListView(),
+    UpdatesScreen(),
+    SizedBox.shrink(),
+    MyOccurrencesScreen(),
+    ProfileScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    if (index == 2) {
+      Navigator.pushNamed(context, AppRoutes.newOccurrence);
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bem vindo!'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            tooltip: 'Meu Perfil',
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.profile);
-            },
-          ),
-        ],
-      ),
-      //FutureBuilder para dados que demoram a chegar
-      body: FutureBuilder<List<Occurrence>>(
-        future: _occurrencesFuture,
-        builder: (context, snapshot) {
-          //c1: dados carregando
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          //c2: erro na busca
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Erro ao carregar ocorrências: ${snapshot.error}'),
-            );
-          }
-          // c3:dados chegaram, mas a lista vazia
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Nenhuma ocorrência encontrada.'));
-          }
-          // c4: sucesso
-          final occurrences = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: occurrences.length,
-            itemBuilder: (context, index) {
-              final occurrence = occurrences[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                elevation: 3,
-                clipBehavior: Clip.antiAlias, //corta bordas
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    //widget para imagens da net
-                    Image.network(
-                      occurrence.imageUrl,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      // loading imagem
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          height: 180,
-                          alignment: Alignment.center,
-                          child: CircularProgressIndicator(
-                            value:
-                                loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                          ),
-                        );
-                      },
-                      //icone erro se imagem não carregar
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 180,
-                          color: Colors.grey[200],
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.broken_image,
-                            color: Colors.grey[400],
-                            size: 48,
-                          ),
-                        );
-                      },
-                    ),
-
-                    //texto
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            occurrence.title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            occurrence.address,
-                            style: TextStyle(color: Colors.grey[700]),
-                          ),
-                          const SizedBox(height: 12),
-                          Chip(
-                            label: Text(
-                              occurrence.status.name.replaceFirst(
-                                occurrence.status.name[0],
-                                occurrence.status.name[0].toUpperCase(),
-                              ),
-                            ),
-                            backgroundColor: _getStatusColor(occurrence.status),
-                            labelStyle: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.newOccurrence);
-        },
-        tooltip: 'Nova Ocorrência',
-        child: const Icon(Icons.add),
+        onPressed: () => _onItemTapped(2),
+        backgroundColor: Colors.grey[850],
+        child: const Icon(Icons.add, color: Colors.white),
+        elevation: 2.0,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+              tooltip: 'Início',
+              icon: Icon(Icons.home, color: _selectedIndex == 0 ? Theme.of(context).primaryColor : Colors.grey),
+              onPressed: () => _onItemTapped(0),
+            ),
+            IconButton(
+              tooltip: 'Atualizações',
+              icon: Icon(Icons.notifications, color: _selectedIndex == 1 ? Theme.of(context).primaryColor : Colors.grey),
+              onPressed: () => _onItemTapped(1),
+            ),
+            const SizedBox(width: 40),
+            IconButton(
+              tooltip: 'Minhas Ocorrências',
+              icon: Icon(Icons.folder, color: _selectedIndex == 3 ? Theme.of(context).primaryColor : Colors.grey),
+              onPressed: () => _onItemTapped(3),
+            ),
+            IconButton(
+              tooltip: 'Perfil',
+              icon: Icon(Icons.person, color: _selectedIndex == 4 ? Theme.of(context).primaryColor : Colors.grey),
+              onPressed: () => _onItemTapped(4),
+            ),
+          ],
+        ),
       ),
     );
-  }
-
-  // função def cor status
-  Color _getStatusColor(OccurrenceStatus status) {
-    switch (status) {
-      case OccurrenceStatus.resolvido:
-        return Colors.green.shade100;
-      case OccurrenceStatus.emAndamento:
-        return Colors.orange.shade100;
-      case OccurrenceStatus.recebido:
-      default:
-        return Colors.blue.shade100;
-    }
   }
 }

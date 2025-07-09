@@ -1,4 +1,4 @@
-import 'package:voz_popular/data/models/user_model.dart';
+/*import 'package:voz_popular/data/models/user_model.dart';
 import 'package:voz_popular/data/services/auth_manager.dart';
 
 class AuthService {
@@ -37,4 +37,4 @@ class AuthService {
   AuthManager.instance.logout();
   print('Usuário deslogado com sucesso!');
 }
-}
+}*/

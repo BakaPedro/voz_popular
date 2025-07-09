@@ -34,14 +34,18 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  image_picker: ^1.1.2    # Para acessar a câmera e a galeria de fotos
+  image_picker: ^1.1.2
   geolocator: ^12.0.0 
   dio: ^5.8.0+1
   shared_preferences: ^2.5.3
   get_it: ^8.0.3
   mime: ^1.0.5
   http_parser: ^4.0.2
-  
+  shimmer: ^3.0.0
+  intl: ^0.20.2
+  flutter_map: ^8.1.1
+  geocoding: ^4.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
