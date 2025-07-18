@@ -185,6 +185,8 @@ class OccurrenceCard extends StatelessWidget {
         return Colors.green.shade600;
       case OccurrenceStatus.em_andamento:
         return Colors.orange.shade700;
+      case OccurrenceStatus.rejeitado:
+        return const Color.fromARGB(255, 0, 0, 0);
       case OccurrenceStatus.recebido:
       default:
         return Colors.blue.shade600;

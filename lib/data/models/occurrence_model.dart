@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:voz_popular/data/models/comment_model.dart';
 
 //define status possiveis
-enum OccurrenceStatus { recebido, em_analise, em_andamento, concluido, atrasado }
+enum OccurrenceStatus { recebido, em_analise, em_andamento, concluido, rejeitado, atrasado }
 
 class Occurrence {
   final String id;

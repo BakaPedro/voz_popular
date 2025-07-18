@@ -57,6 +57,9 @@ class ApiOccurrenceRepository implements OccurrenceRepository {
           case OccurrenceStatus.atrasado:
             statusString = 'atrasado';
             break;
+          case OccurrenceStatus.rejeitado:
+            statusString = 'rejeitado';
+            break;
           case OccurrenceStatus.recebido:
             statusString = 'recebido';
             break;
@@ -155,10 +158,8 @@ class ApiOccurrenceRepository implements OccurrenceRepository {
         // ),
       );
     } on DioException catch (e) {
-      print('Erro em submitOccurrence: ${e.response?.data ?? e.message}');
-      throw Exception(
-        'Falha ao enviar ocorrência. Verifique os dados e tente novamente.',
-      );
+      final errorMessage = e.response?.data['message'] ?? 'Falha ao enviar ocorrência. Verifique os dados e tente novamente.';
+      throw Exception(errorMessage);
     } catch (e) {
       print('Erro inesperado em submitOccurrence: $e');
       throw Exception('Ocorreu um erro inesperado.');
